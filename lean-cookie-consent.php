@@ -3,7 +3,7 @@
  * Plugin Name: Lean Cookie Consent
  * Plugin URI: https://github.com/maildihooz-lgtm/lean-cookie-consent-wordpress
  * Description: Minimal WordPress connector for the Lean Cookie Consent SaaS. Configure a Site Key in the admin area; the plugin enqueues a bundled local runtime that fetches site configuration from the SaaS. The plugin does not store custom consent logs and does not allow arbitrary script insertion.
- * Version: 2.0.0
+ * Version: 2.0.1
  * Requires at least: 5.1
  * Requires PHP: 7.1
  * Author: Alessandro Romani
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LEAN_COOKIE_CONSENT_VERSION', '2.0.0' );
+define( 'LEAN_COOKIE_CONSENT_VERSION', '2.0.1' );
 define( 'LEAN_COOKIE_CONSENT_FILE', __FILE__ );
 define( 'LEAN_COOKIE_CONSENT_OPTION', 'lean_cookie_consent_site_key' );
 define( 'LEAN_COOKIE_CONSENT_API_BASE_URL', 'https://api.leancookieconsent.com' );
@@ -229,7 +229,7 @@ function lean_cookie_consent_render_settings_page() {
 		<p>
 			<a
 				class="button button-secondary"
-				href="<?php echo esc_url( 'https://app.leancookieconsent.com/' ); ?>"
+				href="<?php echo esc_url( 'https://app.leancookieconsent.com/admin' ); ?>"
 				target="_blank"
 				rel="noopener noreferrer"
 			>

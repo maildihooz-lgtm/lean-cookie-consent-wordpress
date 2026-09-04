@@ -4,7 +4,7 @@ Tags: cookie consent, privacy, gdpr, cookie banner, consent
 Requires at least: 5.1
 Tested up to: 7.1
 Requires PHP: 7.1
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,7 +46,7 @@ No. Consent records are stored and managed entirely by the Lean Cookie Consent S
 
 = Where do I find my Site Key? =
 
-Sign in to https://app.leancookieconsent.com/, open your site configuration and copy the Site Key shown there.
+Sign in to https://app.leancookieconsent.com/admin, open your site configuration and copy the Site Key shown there.
 
 = Is this trialware? =
 
@@ -85,6 +85,9 @@ The cookie consent banner, preference collection and consent records are handled
 This plugin adds a short suggested text to the WordPress Privacy Policy Guide describing the SaaS integration and the data handled by the SaaS.
 
 == Changelog ==
+
+= 2.0.1 =
+* Point the WordPress settings page dashboard button directly to the Lean Cookie Consent admin area.
 
 = 2.0.0 =
 * Plugin rebuilt as a minimal SaaS connector. Removed the entire local consent management platform: banner HTML, preference panel, consent logging, CSV export, search, delete, retention cleanup, pseudonymization, category descriptions, color picker, font picker, layout picker, position picker, consent expiration, privacy policy guide for local CMP, custom consent table.
