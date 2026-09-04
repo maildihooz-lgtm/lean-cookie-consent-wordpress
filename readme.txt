@@ -4,7 +4,7 @@ Tags: cookie consent, privacy, gdpr, cookie banner, consent
 Requires at least: 5.1
 Tested up to: 7.1
 Requires PHP: 7.1
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,7 @@ Yes. A Lean Cookie Consent account and a Site Key are required. The plugin will 
 
 = Does it load external JavaScript? =
 
-No remote executable JavaScript is loaded by version 2.0.0. When a Site Key is configured, the plugin enqueues its bundled local runtime and the runtime fetches JSON configuration from the Lean Cookie Consent SaaS. The Site Key is passed as a `site` URL query parameter. See the "External services" section below for full details.
+No remote executable JavaScript is loaded by version 2.0.0 and later. When a Site Key is configured, the plugin enqueues its bundled local runtime and the runtime fetches JSON configuration from the Lean Cookie Consent SaaS. The Site Key is passed as a `site` URL query parameter. See the "External services" section below for full details.
 
 = Does the plugin allow inserting or executing arbitrary JavaScript? =
 
@@ -85,6 +85,9 @@ The cookie consent banner, preference collection and consent records are handled
 This plugin adds a short suggested text to the WordPress Privacy Policy Guide describing the SaaS integration and the data handled by the SaaS.
 
 == Changelog ==
+
+= 2.0.2 =
+* Add idempotent upgrade handling for legacy installs, including plugin version storage, legacy Site Key preservation when available and an admin notice when a SaaS Site Key must be configured.
 
 = 2.0.1 =
 * Point the WordPress settings page dashboard button directly to the Lean Cookie Consent admin area.

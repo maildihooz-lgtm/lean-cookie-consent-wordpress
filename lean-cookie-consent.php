@@ -3,7 +3,7 @@
  * Plugin Name: Lean Cookie Consent
  * Plugin URI: https://github.com/maildihooz-lgtm/lean-cookie-consent-wordpress
  * Description: Minimal WordPress connector for the Lean Cookie Consent SaaS. Configure a Site Key in the admin area; the plugin enqueues a bundled local runtime that fetches site configuration from the SaaS. The plugin does not store custom consent logs and does not allow arbitrary script insertion.
- * Version: 2.0.1
+ * Version: 2.0.2
  * Requires at least: 5.1
  * Requires PHP: 7.1
  * Author: Alessandro Romani
@@ -19,12 +19,165 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LEAN_COOKIE_CONSENT_VERSION', '2.0.1' );
+define( 'LEAN_COOKIE_CONSENT_VERSION', '2.0.2' );
 define( 'LEAN_COOKIE_CONSENT_FILE', __FILE__ );
 define( 'LEAN_COOKIE_CONSENT_OPTION', 'lean_cookie_consent_site_key' );
+define( 'LEAN_COOKIE_CONSENT_VERSION_OPTION', 'lean_cookie_consent_plugin_version' );
+define( 'LEAN_COOKIE_CONSENT_UPGRADE_NOTICE_OPTION', 'lean_cookie_consent_upgrade_notice' );
 define( 'LEAN_COOKIE_CONSENT_API_BASE_URL', 'https://api.leancookieconsent.com' );
 define( 'LEAN_COOKIE_CONSENT_SITE_KEY_MAX_LENGTH', 64 );
 define( 'LEAN_COOKIE_CONSENT_SITE_KEY_PATTERN', '/^[a-z0-9_-]+$/' );  // Production Site Key charset: a-z 0-9 and underscore (verified: 0 hyphens in 42 production sites)
+
+register_activation_hook( LEAN_COOKIE_CONSENT_FILE, 'lean_cookie_consent_activate' );
+
+/**
+ * Run installation and upgrade routines on plugin activation.
+ *
+ * @param bool $network_wide Whether the plugin is network-activated.
+ * @return void
+ */
+function lean_cookie_consent_activate( $network_wide = false ) {
+	if ( is_multisite() && $network_wide ) {
+		$site_ids = get_sites(
+			array(
+				'fields' => 'ids',
+				'number' => 0,
+			)
+		);
+		foreach ( $site_ids as $site_id ) {
+			switch_to_blog( (int) $site_id );
+			lean_cookie_consent_run_upgrade();
+			restore_current_blog();
+		}
+		return;
+	}
+
+	lean_cookie_consent_run_upgrade();
+}
+
+add_action( 'admin_init', 'lean_cookie_consent_maybe_upgrade', 1 );
+
+/**
+ * Run pending upgrade routines during admin requests.
+ *
+ * This covers normal WordPress plugin updates, where activation hooks are not
+ * fired again after replacing the plugin files.
+ *
+ * @return void
+ */
+function lean_cookie_consent_maybe_upgrade() {
+	$stored_version = get_option( LEAN_COOKIE_CONSENT_VERSION_OPTION, '' );
+	if ( LEAN_COOKIE_CONSENT_VERSION === $stored_version ) {
+		return;
+	}
+
+	lean_cookie_consent_run_upgrade();
+}
+
+/**
+ * Apply idempotent upgrade steps and store the current plugin version.
+ *
+ * @return void
+ */
+function lean_cookie_consent_run_upgrade() {
+	$stored_version  = get_option( LEAN_COOKIE_CONSENT_VERSION_OPTION, '' );
+	$legacy_settings = get_option( 'lean_cookie_consent_settings', false );
+	$is_legacy       = ( '' === $stored_version && false !== $legacy_settings ) || ( '' !== $stored_version && version_compare( (string) $stored_version, '2.0.0', '<' ) );
+
+	if ( $is_legacy ) {
+		lean_cookie_consent_upgrade_from_legacy( $legacy_settings );
+	}
+
+	update_option( LEAN_COOKIE_CONSENT_VERSION_OPTION, LEAN_COOKIE_CONSENT_VERSION, false );
+}
+
+/**
+ * Migrate from the legacy local CMP profile to the SaaS connector profile.
+ *
+ * Legacy 1.x installs did not require a SaaS Site Key, so most upgrades will
+ * need the administrator to paste one manually. If a compatible key happens to
+ * be present in stored legacy settings, preserve it.
+ *
+ * @param mixed $legacy_settings Stored legacy settings option.
+ * @return void
+ */
+function lean_cookie_consent_upgrade_from_legacy( $legacy_settings ) {
+	if ( '' === lean_cookie_consent_get_site_key() ) {
+		$legacy_site_key = lean_cookie_consent_extract_legacy_site_key( $legacy_settings );
+		if ( '' !== $legacy_site_key ) {
+			update_option( LEAN_COOKIE_CONSENT_OPTION, $legacy_site_key, false );
+		} else {
+			update_option( LEAN_COOKIE_CONSENT_UPGRADE_NOTICE_OPTION, 'site_key_required', false );
+		}
+	}
+
+	wp_clear_scheduled_hook( 'lean_cookie_consent_cleanup' );
+	wp_clear_scheduled_hook( 'lean_cookie_consent_daily_cleanup' );
+}
+
+/**
+ * Extract a compatible Site Key from legacy settings, if one exists.
+ *
+ * @param mixed $legacy_settings Stored legacy settings option.
+ * @return string
+ */
+function lean_cookie_consent_extract_legacy_site_key( $legacy_settings ) {
+	if ( ! is_array( $legacy_settings ) ) {
+		return '';
+	}
+
+	$candidate_keys = array( 'site_key', 'siteKey', 'lean_site_key', 'account_site_key' );
+	foreach ( $candidate_keys as $candidate_key ) {
+		if ( empty( $legacy_settings[ $candidate_key ] ) || ! is_string( $legacy_settings[ $candidate_key ] ) ) {
+			continue;
+		}
+		$site_key = lean_cookie_consent_sanitize_site_key( $legacy_settings[ $candidate_key ] );
+		if ( '' !== $site_key ) {
+			return $site_key;
+		}
+	}
+
+	return '';
+}
+
+add_action( 'admin_notices', 'lean_cookie_consent_upgrade_admin_notice' );
+
+/**
+ * Tell legacy users that they must connect the new SaaS Site Key.
+ *
+ * @return void
+ */
+function lean_cookie_consent_upgrade_admin_notice() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	if ( 'site_key_required' !== get_option( LEAN_COOKIE_CONSENT_UPGRADE_NOTICE_OPTION, '' ) ) {
+		return;
+	}
+
+	delete_option( LEAN_COOKIE_CONSENT_UPGRADE_NOTICE_OPTION );
+	$url = admin_url( 'options-general.php?page=lean-cookie-consent' );
+	?>
+	<div class="notice notice-warning is-dismissible">
+		<p>
+			<?php
+			printf(
+				wp_kses(
+					/* translators: %s: plugin settings page URL. */
+					__( 'Lean Cookie Consent was upgraded to the SaaS connector profile. Add your Site Key in <a href="%s">Settings &gt; Lean Cookie Consent</a> to load the frontend runtime.', 'lean-cookie-consent' ),
+					array(
+						'a' => array(
+							'href' => array(),
+						),
+					)
+				),
+				esc_url( $url )
+			);
+			?>
+		</p>
+	</div>
+	<?php
+}
 
 /**
  * Return the validated Site Key or an empty string.

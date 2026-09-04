@@ -24,6 +24,8 @@ function lean_cookie_consent_uninstall_site() {
 
 	// Current (2.0.0+) Site Key option.
 	delete_option( 'lean_cookie_consent_site_key' );
+	delete_option( 'lean_cookie_consent_plugin_version' );
+	delete_option( 'lean_cookie_consent_upgrade_notice' );
 
 	// Legacy 1.x local CMP options.
 	delete_option( 'lean_cookie_consent_settings' );
