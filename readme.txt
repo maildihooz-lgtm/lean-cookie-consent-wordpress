@@ -2,7 +2,7 @@
 Contributors: blacklotusconsulting
 Tags: cookie consent, privacy, gdpr, cookie banner, consent
 Requires at least: 5.1
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 7.1
 Stable tag: 2.0.3
 License: GPLv2 or later
