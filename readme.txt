@@ -63,7 +63,7 @@ What is sent: The configured Site Key (passed as a `site` URL query parameter, c
 What is received: A JSON configuration payload used by the bundled local runtime to render the cookie banner, preference center and consent-mode signaling on the visitor's browser. The payload also includes the consent record API endpoint used by the banner.
 Why: To display the cookie banner and record consent choices that match the configuration you set up in your Lean Cookie Consent dashboard.
 Account: A Lean Cookie Consent account and Site Key are required. The Site Key is entered manually in Settings → Lean Cookie Consent.
-Service provider: Alessandro Romani e Alessandro Vona (https://leancookieconsent.com/)
+Service provider: Black Lotus Consulting Srl (https://leancookieconsent.com/)
 Privacy Policy: https://leancookieconsent.com/privacy-policy
 Terms of Service: https://leancookieconsent.com/terms
 
