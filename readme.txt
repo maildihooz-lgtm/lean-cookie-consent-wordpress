@@ -2,9 +2,9 @@
 Contributors: blacklotusconsulting
 Tags: cookie consent, privacy, gdpr, cookie banner, consent
 Requires at least: 5.1
-Tested up to: 7.1
+Tested up to: 6.8
 Requires PHP: 7.1
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,9 @@ The cookie consent banner, preference collection and consent records are handled
 This plugin adds a short suggested text to the WordPress Privacy Policy Guide describing the SaaS integration and the data handled by the SaaS.
 
 == Changelog ==
+
+= 2.0.3 =
+* Correct the WordPress readme "Tested up to" value for repository validation.
 
 = 2.0.2 =
 * Add idempotent upgrade handling for legacy installs, including plugin version storage, legacy Site Key preservation when available and an admin notice when a SaaS Site Key must be configured.
